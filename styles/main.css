@@ -1,0 +1,408 @@
+/***************************/
+/* All CSS is stored here. */
+/***************************/
+
+
+/* UI Styles */
+@font-face {
+	font-family: 'aGoblinAppears';
+	src: url(../fonts/AGoblinAppears.ttf);
+}
+
+html {
+	background-color: black;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+}
+
+body * {
+	font-family: 'aGoblinAppears', sans-serif;
+	color: whitesmoke;
+}
+
+h1{
+	font-family: 'Press Start 2P', cursive;
+	color: whitesmoke;
+	display: inline-block;
+	position:absolute;
+	font-size:1.3em;
+	padding-left: 1em;
+	top: 0;
+	left:1000px;
+	line-height:1.5em;
+}
+
+h5 {
+	margin: 0.8em;
+	position: absolute;
+	top: 2px;
+	display: inline-block;
+	color: whitesmoke;
+	text-shadow: 3px 3px black;
+}
+
+#health {
+	left: 100px;
+}
+
+#attack {
+	left: 225px;
+}
+
+#floor {
+	left: 0px;
+}
+
+div#gridContainer{
+	top:5px;
+	left:5px;
+	padding:0;
+	display:inline-block;
+	position:absolute;
+	z-index: 0; /* underneath everything */
+}
+
+body img {
+	display: inline-block;
+	width: 14em;
+	height: auto;
+	margin-left: 1em;
+	border: 2px solid white;
+	position:absolute;
+	top: 75px;
+	left: 1000px;
+}
+
+#messageBox {
+	display: inline-block;
+	position: absolute;
+	font-size: 0.9em;
+	margin: 0.8em;
+	padding-left: 0.4em;
+	top: 300px;
+	left: 1000px;
+	line-height: 1.4em;
+	background-color: rgb(97, 97, 97);
+	border: 4px double whitesmoke;
+	width: 20em;
+	height: 35em;
+	overflow: auto;
+}
+
+#messageBox p {
+	clear: both;
+}
+
+#startButton {
+	position: absolute;
+	font-family: 'aGoblinAppears', sans-serif;
+	border: 4px double silver;
+	border-radius: 8px;
+	background-color: black;
+	color: whitesmoke;
+	top: 18em;
+	left: 22em;
+	width: 9rem;
+	height: 3.5rem;
+	font-size: 20px;
+}
+
+
+
+
+/* Background Tile Styles */
+span.floor{
+	width:32px;
+	height:32px;
+	background: url(../images/terrain.png);
+}
+
+span.wall{
+	width:32px;
+	height:32px;
+	background: url(../images/terrain.png);
+	background-position: -32px 0px;
+}
+
+span.grass{
+	width:32px;
+	height:32px;
+	background: url(../images/terrain.png);
+	background-position: -64px 0px;
+}
+
+span.water{
+	width:32px;
+	height:32px;
+	background: url(../images/terrain.png);
+	background-position: -96px 0px;
+}
+
+span.ground{
+	width:32px;
+	height:32px;
+	background: url(../images/terrain.png);
+	background-position: -128px 0px;
+}
+
+span.stairs{
+	width:32px;
+	height:32px;
+	background: url(../images/terrain.png);
+	background-position: -160px 0px;
+}
+
+span.door{
+	width:32px;
+	height:32px;
+	background: url(../images/terrain.png);
+	background-position: -192px 0px;
+}
+
+span.opendoor{
+	width:32px;
+	height:32px;
+	background: url(../images/terrain.png);
+	background-position: -224px 0px;
+}
+
+span.cell{
+	height:32px;
+	width:32px;
+	border: 0px solid rgb(204,204,204); /* actual width & height is 32px because of border */
+	background-color: #ccc;
+	padding:0;
+	margin:0;
+	position:absolute;
+}
+
+span.cellSelected{
+	height:32px;
+	width:32px;
+	border:0;
+	background-color: red;
+	padding:0;
+	margin:0;
+	position:absolute;
+}
+
+
+/* Game Object Styles */
+span.gameObject{
+	height:32px;
+	width:32px;
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	z-index: 100; /* layered between background tiles and player */
+	background-color:black;
+	background: url(../images/gameObjects.png);
+}
+
+/* Monster Styles */
+span.imp{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	z-index: 500; /* layered between other game objects and player */
+	background-position: 0px -32px;
+	transition-property: all;
+	transition-duration: .25s;
+}
+
+span.wraith{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	z-index: 500; /* layered between other game objects and player */
+	background-position: -32px -32px;
+	transition-property: all;
+	transition-duration: .25s;
+}
+
+span.gorgon{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	z-index: 500; /* layered between other game objects and player */
+	background-position: -64px -32px;
+	transition-property: all;
+	transition-duration: .25s;
+}
+
+span.blob{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	z-index: 500; /* layered between other game objects and player */
+	background-position: -96px -32px;
+	transition-property: all;
+	transition-duration: .25s;
+}
+
+span.abomination{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	z-index: 500; /* layered between other game objects and player */
+	background-position: -128px -32px;
+	transition-property: all;
+	transition-duration: .25s;
+}
+
+span.dragon{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	z-index: 500; /* layered between other game objects and player */
+	background-position: -160px -32px;
+	transition-property: all;
+	transition-duration: .25s;
+}
+
+span.balor{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	z-index: 500; /* layered between other game objects and player */
+	background-position: -192px -32px;
+	transition-property: all;
+	transition-duration: .25s;
+}
+
+span.animatedarmor{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	z-index: 500; /* layered between other game objects and player */
+	background-position: -224px -32px;
+	transition-property: all;
+	transition-duration: .25s;
+}
+
+span.specter{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	z-index: 500; /* layered between other game objects and player */
+	background-position: -256px -32px;
+	transition-property: all;
+	transition-duration: .25s;
+}
+
+span.secret{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	z-index: 500; /* layered between other game objects and player */
+	background-position: -288px -32px;
+	transition-property: all;
+	transition-duration: .25s;
+}
+
+/* Player Style */
+span.player{ 
+	background-position: 0px 0px;
+	z-index: 1000; /* On top of everything but effects */
+	transition-property: all;
+	transition-duration: .25s;
+	transition-timing-function: ease;
+}
+
+/* Item Styles */
+span.elixir{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	background-position: 0px -64px;
+}
+
+span.concoction{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	background-position: -32px -64px;
+}
+
+span.brew{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	background-position: -64px -64px;
+}
+
+span.apple{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	background-position: 0px -96px;
+}
+
+span.gem{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	background-position: -128px -64px;
+}
+
+span.bell{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	background-position: -160px -64px;
+}
+
+span.ring1{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	background-position: -96px -96px;
+}
+
+span.lootbag{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	background-position: -192px -64px;
+}
+
+span.key1{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	background-position: -224px -64px;
+}
+
+span.pot{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	background-position: 0px -96px;
+}
+
+span.boots{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	background-position: -32px -96px;
+}
+
+span.trumpet{ 
+	position:absolute;
+	left: -100px;
+	top: -100px;
+	background-position: -64px -96px;
+}
+
+/* Effect styles */
+span.boom1{ 
+	position: absolute;
+	left: -100px;
+	top: -100px;
+	background-position: 96px 0px;
+	z-index: 1100; /* On top of everything */
+}
+

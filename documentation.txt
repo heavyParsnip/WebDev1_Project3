@@ -1,0 +1,74 @@
+-PROCESS-
+-Starting from the template code, my first step was to take all the gameObject code and refactor it to
+use ES6 classes instead of object literals. After that, I turned my attention to implementing basic
+functionalities (enemy movement, enemy behavior, overhaul to terrain generation and terrain properties,
+items and monster ES6 and CSS classes).
+-Once that was done, I started to make graphical adjustments, added an image with a rundown of the basic
+controls to the side of the page along with a heads-up display, and worked on getting a message log functioning.
+-After that, I started adding sounds to actions that I felt were deserving of auditory feedback.
+-I spent the last of my time struggling to implement a functioning inventory, level progression (specifically 
+the loading and unloading of levels), attacks, a game over screen, and resetting without refreshing the page. Most of
+those functionalities are either unfinished or unimplemented.
+
+-While I felt my concept was simple enough, I did end up overscoping and I have a difficult time calling what I turned in "finished."
+I feel the game only reaches the bare minimum of functional, in that you can move around, attack, interact with enemies, and die, but
+I'm still reasonably proud of what I was able to get done.
+
+-Some technical shortcomings include blocks of very similar code that I couldn't figure out how to turn one reusable block of code,
+as well as having the main game logic in the main HTML file rather than in its own file. The barebones implementation of the game as
+well as the lack of streamlined code is largely attributed to having to rush to get the project done within the timeframe due to other
+obligations and a large project scope.
+
+-One major technical challenge was figuring out how to get the window to determine if multiple keys were being pressed simultaneously.
+This was solved through the use of the onkeydown and onkeyup events working together on a single array of key states.
+-A less major but still noteworthy technical challenge was getting the message log to display the most recent messages first so that the
+player need not scroll down to see new messages. This was solved by creating the text nodes for the new message elements explicitly and 
+using insertBefore() to insert the elements.
+
+
+
+-SOURCES-
+Sound sources:
+https://freesound.org/people/JapanYoshiTheGamer/sounds/361265/
+https://freesound.org/people/meroleroman7/sounds/238283/
+https://freesound.org/people/Mrthenoronha/sounds/507958/
+https://freesound.org/people/JavierZumer/sounds/257217/
+https://freesound.org/people/jalastram/sounds/386582/
+https://freesound.org/people/plasterbrain/sounds/399095/
+https://freesound.org/people/josepharaoh99/sounds/361211/
+https://freesound.org/people/Mrthenoronha/sounds/399904/
+https://freesound.org/people/jivatma07/sounds/72258/
+https://freesound.org/people/IanStarGem/sounds/341813/
+https://freesound.org/people/srm2888/sounds/401071/
+https://freesound.org/people/sweet_trip/sounds/260644/
+https://freesound.org/people/MentosLat/sounds/417486/
+https://freesound.org/people/SamsterBirdies/sounds/368608/
+https://freesound.org/people/Obvsly/sounds/462985/
+https://freesound.org/people/B_Lamerichs/sounds/219756/
+https://freesound.org/people/Dirtjm/sounds/262279/
+
+Most graphical assets were taken from the NetHack 32x tileset.
+
+-WHERE TO FIND ANYTHING SPECIAL-
+Under the link to the documentation, there's a link to a Bestiary that I wrote in my off-time. It has information on 
+all the monsters and items that exist in the code. Most of the descriptions are humorous; I'd like to think it gives
+things a little more dimension.
+
+-HOW REQUIREMENTS WERE MET-
+
+-I tried to be very thorough with my commenting, especially where the code gets hard to follow.
+-All game objects except for the player are fully implemented with ES6 classes. The player has partial class-implementation, 
+but all the player methods are still in the main file.
+-All the CSS is valid, and there is only one significant validation issue with the HTML (that is, the <script> tag, which I feel is minor)
+-The images, while small, are all pixel-perfect. I'm going out of my way to note this because it required a lot of manual coding.
+-There are some minor bugs (notably with turning in place), but as far as I could see, none of them interrupt the game.
+-The Bestiary! It has some valuable info about monsters and items I didn't get to fully implement.
+-Sound feedback for certain actions (starting the game, bumping into walls, attacking, getting hit, and dying). There's even a separate sound for if you land or miss an attack!
+-I feel like the interface is pretty clear and the control guide makes things easy to discern.
+-I think the visual design is pretty cohesive. I would've liked to make things a little bigger, but that would've demanded a lot more backend work for making everything
+display properly on smaller displays.
+-The message log is where I feel my interface implementation is strongest. Without it, I think understanding what's going on in the game would be much less clear.
+
+-I know my game is very barebones in regards to how much of it you can play, but I feel that I really put a lot into getting as much working as I could and working properly.
+My main evidence is the length of my main file (yes, it should be divided into more files); even though my game is nowhere near where I wanted it to be, I can look at the combined length of all my files and say "Yeah, I worked as hard as I could have on this." I had fun with it and I learned more about JavaScript and its nuances (it's asynchrous!)
+than I did from any other individual assignment this semester.

@@ -1,0 +1,669 @@
+<!--------------------------------------->
+<!--All code that directly controls the-->
+<!--game logic and functionality can be-->
+<!--found in this file.                -->
+<!--------------------------------------->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>CRAWLER</title>
+	<link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+	<link href="styles/main.css" rel="stylesheet">
+	<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+	<script src="scripts/gamedata.js"></script>
+	<style>
+		audio{display:none;}
+	</style>
+</head>
+<body>
+<div id="gridContainer"></div>
+<h1>CRAWLER</h1>
+<h5 id="floor"></h5>
+<h5 id="health"></h5>
+<h5 id="attack"></h5>
+<img src="images/controls.png" alt="Controls">
+<div id="messageBox"><p id="message"></p></div>
+<button id="startButton" onclick="initialize(this)">START</button>
+
+<!-- SOUNDS -->
+<audio id="bass" src="sounds/bass.wav" controls></audio>
+<audio id="bump" src="sounds/hit.wav" controls></audio>
+<audio id="clonk" src="sounds/clonk.wav" controls></audio>
+<audio id="whoosh" src="sounds/cymbal.wav" controls></audio>
+<audio id="pickup" src="sounds/dading.wav" controls></audio>
+<audio id="defeat" src="sounds/down.wav" controls></audio>
+<audio id="menu" src="sounds/hop.flac" controls></audio>
+<audio id="lowBeep" src="sounds/lowbeep.wav" controls></audio>
+<audio id="sizzle" src="sounds/sizz.mp3" controls></audio>
+<audio id="select" src="sounds/snare.wav" controls></audio>
+<audio id="start" src="sounds/start.wav" controls></audio>
+
+</body>
+<script>
+"use strict";
+
+//////////////////
+// I. VARIABLES //
+//////////////////
+const cellWidth = 32; 
+const cellSpacing = 0;
+const container = document.querySelector("#gridContainer");
+const messageLog = document.querySelector("#messageBox");
+const HUDhealth = document.querySelector("#health");
+const HUDattack = document.querySelector("#attack");
+const HUDfloor = document.querySelector("#floor");
+let cells = []; // the HTML elements - our "view"
+let keys = []; // For storing what keys are being pressed down; necessary for processing combination inputs
+
+// faking an enumeration here
+const keyboard = Object.freeze({
+	SHIFT: 		16,
+	SPACE: 		32,
+	LEFT: 		37, 
+	UP: 		38, 
+	RIGHT: 		39, 
+	DOWN: 		40,
+	Z:			90,
+	X:			88,
+	ENTER:		13,
+});
+
+// this is an enumeration for gameworld levels
+const worldTile = Object.freeze({
+	FLOOR: 		0,
+	WALL: 		1,
+	GRASS: 		2,
+	WATER: 		3,
+	GROUND: 	4,
+	STAIRS:		5,
+	DOOR:		6
+});
+
+// level data is over in gamedata.js
+let currentLevelNumber = 1;
+let currentGameWorld = undefined;   // a 2D array - the grid:  walls, floors, water, etc...
+let currentGameObjects = undefined; // a 1D array - stuff that's on top of the grid and can move: monsters, treasure, keys, etc...
+let activeEnemies = undefined;
+
+// the player - uses an ES6 class
+let player = new Player(2, 2, 10);
+
+	/////////////////
+	// I-A. SOUNDS //
+	/////////////////
+let bump = undefined; // the "bump" sound that plays when the player attempts to move into an impassable tille
+let bass = undefined;
+let clonk = undefined; // hit sound
+let whoosh = undefined; // wind sound
+let pickup = undefined; // item pickup sound
+let defeat = undefined; // sound played when the player is defeated
+let menu = undefined; // sound played when the player opens the menu
+let lowBeep = undefined;
+let sizzle = undefined;
+let select = undefined; // menu selection sound
+let start = undefined; // sound played at the start of the game
+
+///////////////////
+// II. INIT code //
+///////////////////
+
+/*window.onload = ()=>{
+	currentGameWorld = gameworld["world" + currentLevelNumber];
+	let numCols = currentGameWorld[0].length;
+	let numRows = currentGameWorld.length;
+	createGridElements(numRows,numCols);
+	drawGrid(currentGameWorld);
+	loadLevel(currentLevelNumber);
+	drawGameObjects(currentGameObjects);
+	drawGUI();
+	setupSounds();
+	setupEvents();
+	start.play();
+}*/
+
+// Initialize the game
+function initialize(e) {
+	currentGameWorld = gameworld["world" + currentLevelNumber];
+	let numCols = currentGameWorld[0].length;
+	let numRows = currentGameWorld.length;
+	createGridElements(numRows,numCols);
+	drawGrid(currentGameWorld);
+	loadLevel(currentLevelNumber);
+	drawGameObjects(currentGameObjects);
+	drawGUI();
+	setupSounds();
+	setupEvents();
+	start.play();
+	e.remove();
+}
+
+// Restart the game; separate function from initialize() because not all initial methods need
+// to be called again and some arrays need to be cleaned out
+function newGame(e) {
+	cells = [];
+	currentLevelNumber = 1;
+	currentGameWorld = gameworld["world" + currentLevelNumber];
+	let numCols = currentGameWorld[0].length;
+	let numRows = currentGameWorld.length;
+	createGridElements(numRows,numCols);
+	drawGrid(currentGameWorld);
+	loadLevel(currentLevelNumber);
+	drawGameObjects(currentGameObjects);
+	drawGUI();
+	start.play();
+	document.querySelector("#gameOver").remove();
+	e.remove();
+}
+
+////////////////////
+// III. FUNCTIONS //
+////////////////////
+	//////////////////////////////
+	// III-A. GENERAL FUNCTIONS //
+	//////////////////////////////
+
+// Set up sounds for usage
+function setupSounds() {
+	let sounds = [];
+	bump = document.querySelector("#bump");
+	sounds.push(bump);
+	bass = document.querySelector("#bass");
+	sounds.push(bass);
+	clonk = document.querySelector("#clonk");
+	sounds.push(clonk);
+	whoosh = document.querySelector("#whoosh");
+	sounds.push(whoosh);
+	pickup = document.querySelector("#pickup");
+	sounds.push(pickup);
+	defeat = document.querySelector("#defeat");
+	sounds.push(defeat);
+	menu = document.querySelector("#menu");
+	sounds.push(menu);
+	lowBeep = document.querySelector("#lowBeep");
+	sounds.push(lowBeep);
+	sizzle = document.querySelector("#sizzle");
+	sounds.push(sizzle);
+	select = document.querySelector("#select");
+	sounds.push(select);
+	start = document.querySelector("#start");
+	sounds.push(start);
+
+	for(let i=0; i<sounds.length; i++)
+	{
+		sounds[i].volume = 0.2;
+	}
+}
+
+// the elements on the screen that won't change - our "view"
+function createGridElements(numRows,numCols){
+	const span = document.createElement('span');
+	span.className = 'cell';
+	for (let row=0;row<numRows;row++){
+	cells.push([]);
+		for (let col=0;col<numCols;col++){
+			let cell = span.cloneNode();
+			cell.style.left = `${col * (cellWidth+cellSpacing)}px`;
+			cell.style.top = `${row * (cellWidth+cellSpacing)}px`;
+			container.appendChild(cell);
+			cells[row][col] = cell;
+		}
+	}
+}
+
+// the elements on the screen that can move and change - also part of the "view"
+function loadLevel(levelNum = 1){
+	currentGameObjects = []; // clear out the old array
+	const node =  document.createElement("span");
+	node.className = "gameObject";
+
+	// now initialize our player
+	player.x = 2;
+	player.y = 2;
+	if(player.element == null) {
+		player.element = node.cloneNode(true);
+		player.element.classList.add("player");
+		container.appendChild(player.element);
+	}
+	
+	
+	/* let's instantiate our game objects */
+	// pull the current level data
+	const levelObjects = allGameObjects["level" + levelNum];
+	
+	// loop through this level's objects ... 
+	for (let obj of levelObjects){
+		obj.element = node.cloneNode(true); 		// Clone the span node and assign it to the new object
+		obj.element.classList.add(obj.className);  // add the className so we see the right image
+		currentGameObjects.push(obj);				// add to currentGameObjects array  (so it gets moved onto the map)
+		container.appendChild(obj.element);		// add to DOM tree (so we can see it!)
+	}
+
+	// Clear out the enemy list and build a new one
+	activeEnemies = [];
+	for(let object of currentGameObjects) {
+		if(object.type == "monster") {
+			activeEnemies.push(object);
+		}
+	}
+}
+
+// Draw the map on the screen.
+function drawGrid(array){
+	const numCols = array[0].length;
+	const numRows = array.length;
+	for (let row=0;row<numRows;row++){
+		for (let col=0;col<numCols;col++){
+			const tile = array[row][col];
+			const element = cells[row][col];
+			
+			switch(tile) {
+    			case worldTile.FLOOR:
+					element.classList.add("floor")
+					break;
+        		
+        		case worldTile.WALL:
+					element.classList.add("wall");
+					break;
+        		
+        		case worldTile.GRASS:
+					element.classList.add("grass");
+					break;
+        		
+        		case worldTile.WATER:
+					element.classList.add("water");
+					break;
+        		
+        		case worldTile.GROUND:
+					element.classList.add("ground");
+					break;
+				
+				case worldTile.STAIRS:
+					element.classList.add("stairs");
+					break;
+
+				case worldTile.DOOR:
+					element.classList.add("door");
+					break;
+				case worldTile.OPENDOOR:
+					element.className.add("opendoor");
+					break;
+			}
+		}
+	}
+}
+
+// Draw the game objects to the screen
+function drawGameObjects(array){
+	// player
+	player.element.style.left = `${player.x * (cellWidth + cellSpacing)}px`;
+	player.element.style.top = `${player.y * (cellWidth + cellSpacing)}px`;
+	
+	
+	// game object
+	for (let gameObject of array){
+		gameObject.element.style.left = `${gameObject.x * (cellWidth + cellSpacing)}px`;
+		gameObject.element.style.top = `${gameObject.y * (cellWidth + cellSpacing)}px`;
+	}
+	
+}
+
+// Function for drawing the GUI
+function drawGUI() {
+	HUDhealth.innerHTML = `HP: ${player.health}/${player.maxHealth}`;
+	HUDattack.innerHTML = `ATK: ${player.attack}`;
+	HUDfloor.innerHTML = `${currentLevelNumber}F`;
+}
+
+// Function for drawing the Game Over screen
+function drawGameOver() {
+	//TODO
+}
+
+function drawMenu() {
+	//TODO
+}
+
+// Function for sending a message to the message box
+function sendMessage(message) {
+	let newMsg = document.createElement("p");
+	let newTextNode = document.createTextNode(message);
+	newMsg.appendChild(newTextNode);
+	
+	// Using insertBefore() so that the newest messages are displayed at the top of the log
+	messageLog.insertBefore(newMsg, messageLog.childNodes[0]);
+}
+
+	////////////////////////////////////////////////
+	// III-B. PLAYER AND ENEMY HANDLING FUNCTIONS //
+	////////////////////////////////////////////////
+// Function for handling player movement based on input. Returns a bool value to allow checking for if the move succeeded,
+// as movement is one of the three actions that ends the player's turn. Contains two sub-functions for conditional checking.
+// Use the comments to navigate this function as it's an absolute behemoth to try and read.
+function movePlayer(e) {
+	let nextX;
+	let nextY;
+	// Determine which direction the player is trying to move. Update which way the player is facing and determine the tile
+	// that the player is trying to move to. Check both conditions for a valid tile. If both conditions succeed, move the
+	// player. If either fails, do not move the player and play the "bump" sound.
+	switch(e.keyCode){
+		// Right
+		case keyboard.RIGHT:
+			player.facing = "right";
+			nextX = player.x + 1;
+			nextY = player.y;
+			if(checkIsLegalMove(nextX,nextY) && checkIsOccupied(nextX,nextY) == null) {
+				player.moveRight();
+				return true;
+			}
+			else {
+				bump.play();
+				return false;
+			}
+			break;
+		// Down
+		case keyboard.DOWN:
+			player.facing = "down";
+			nextX = player.x;
+			nextY = player.y + 1;
+			if(checkIsLegalMove(nextX,nextY) && checkIsOccupied(nextX,nextY) == null) {
+				player.moveDown();
+				return true;
+			}
+			else {
+				bump.play();
+				return false;
+			}
+			break;
+		// Left
+		case keyboard.LEFT:
+			player.facing = "left";
+			nextX = player.x - 1;
+			nextY = player.y;
+			if(checkIsLegalMove(nextX,nextY) && checkIsOccupied(nextX,nextY) == null) {
+				player.moveLeft();
+				return true;
+			}
+			else {
+				bump.play();
+				return false;
+			}
+			break;
+		// Up
+		case keyboard.UP:
+			player.facing = "up";
+			nextX = player.x;
+			nextY = player.y - 1;
+			if(checkIsLegalMove(nextX,nextY) && checkIsOccupied(nextX,nextY) == null) {
+				player.moveUp();
+				return true;
+			}
+			else {
+				bump.play();
+				return false;
+			}
+			break;
+	}
+	
+	// Checks if the space the player is trying to move to is a valid terrain type for them to move
+	// onto. THIS RETURNS FALSE IF: A.) the tile is a wall, B.) the tile is a door AND the player
+	// does not have a key to open it, or C.) the tile is water AND the player does not have water-
+	// walking.
+	function checkIsLegalMove(nextX,nextY){
+		// Determine the tile that the player is attempting to move to
+		let nextTile = currentGameWorld[nextY][nextX];
+		// Is the next tile not a wall? If so, skip all other tests
+		if (nextTile != worldTile.WALL){
+			// Is the next tile a door?
+			if(nextTile == worldTile.DOOR) {
+				// Does the player have a key? If so, remove a key and open the door
+				for(let i=0; i<player.inventory.length; i++) {
+					if(player.inventory[i].name == "Key") {
+						nextTile = worldTile.OPENDOOR;
+						// Use some splice trickery to remove the key from the player's inventory
+						// without leaving a hole in the array;
+						player.inventory.splice(i, 1);
+						return true; // Break out of the loop because a result has been found
+					}
+				}
+			}
+			// Does the player have water-walking? If so, allow movement because all other impassable
+			// tile types have been checked for
+			else if(player.waterWalk == true) {
+				return true;
+			}
+			// This is the last test for any kind of special movement; all movement onto floor tiles 
+			// should end up here
+			else if(nextTile != worldTile.WATER) {
+				return true;
+			}
+		}
+		// Should all conditions fail, don't move the player. Return false
+		// because the player has not moved and has thus not used their turn
+		return false;
+	}
+}
+
+// This function works in tandem with both checkIsLegalMove() and player.attack() and checks if the
+// tile in question is occupied by an enemy. Separate from checkIsLegalMove() so it can be used in
+// player.attack as well.
+function checkIsOccupied(nextX,nextY) {
+	// Check if any enemies are present on the next tile and return accordingly
+	for(let i=0; i<activeEnemies.length; i++) {
+		if(activeEnemies[i].x == nextX && activeEnemies[i].y == nextY) {
+			return i;
+		}
+	}
+	// If no enemies are present, return null
+	return null;
+}
+
+// Attack in the direction the player is facing
+function playerAttack() {
+	let nextX;
+	let nextY;
+	switch(player.facing) {
+		// Right
+		case "right":
+			nextX = player.x + 1;
+			nextY = player.y;
+			break;
+		// Down
+		case "down":
+			nextX = player.x;
+			nextY = player.y + 1;
+			break;
+		// Left
+		case "left":
+			nextX = player.x - 1;
+			nextY = player.y;
+			break;
+		// Up
+		case "right":
+			nextX = player.x;
+			nextY = player.y - 1;
+			break;
+	}
+	let targetIndex = checkIsOccupied(nextX,nextY);
+	let target = activeEnemies[targetIndex];
+		if(target != null) {
+			bass.play();
+			target.health -= player.attack;
+			sendMessage(`You hit ${target.name} for ${player.attack} damage!`);
+			if(target.health <= 0) {
+				sendMessage(`You defeated ${target.name}!`);
+				target.element.remove();
+				activeEnemies.splice(targetIndex, 1);
+			}
+		}
+		else {
+			whoosh.play();
+			return;
+		}
+}
+
+// Function for turning the player
+function orientPlayer(e) {
+	// In addition to having a passive role in handling the display of the player's current orientation, this function also allows
+	// The player to change the direction they're facing without using up their "action" for the turn by holding SHIFT and using 
+	// arrow keys to change direction. The player's direction is indicated by a border on the CSS element.
+
+	// Active turning while SHIFT is held
+	if(keys[keyboard.SHIFT]) {
+		player.element.style.border = '2px solid red';
+		// Using e.keyCode instead of keys[] as the switch condition to ensure the stability and consistency of the returned value
+		switch(e.keyCode) {
+			case keyboard.LEFT:
+				player.facing = "left";
+				break;
+			case keyboard.RIGHT:
+				player.facing = "right";
+				break;
+			case keyboard.UP:
+				player.facing = "up";
+				break;
+			case keyboard.DOWN:
+				player.facing = "down";
+				break;
+			default:
+				break;
+		}
+	}
+	else {
+		player.element.style.border = "none";
+	}
+
+	// Redraw to visually match the current direction, since it can be changed both in this function as well as in movePlayer
+	switch(player.facing) {
+		case "up":
+			player.element.style.borderTop = '2px solid yellow';
+			break;
+		case "down":
+			player.element.style.borderBottom = "2px solid yellow";
+			break;
+		case "left":
+			player.element.style.borderLeft = "2px solid yellow";
+			break;
+		case "right":
+			player.element.style.borderRight = "2px solid yellow";
+			break;
+		default:
+			break;
+	}
+}
+
+
+
+// Function for processing enemy actions
+function enemyTurn() {
+	// Enemy's turn
+	if(activeEnemies.length != 0) { 
+		for(let i=0;i<activeEnemies.length;i++) {
+			let attacker = activeEnemies[i].think(player);
+			if(attacker != null) {
+				clonk.play();
+				sendMessage(`${attacker[0]} hit you for ${attacker[1]} damage!`);
+				drawGUI();
+			}
+		}
+	}
+}
+
+
+
+
+// IV. EVENTS
+function setupEvents(){
+	window.onmouseup = (e) => {
+		e.preventDefault();
+		//gridClicked(e);
+	};
+
+	// Handling for keys being pressed down. Because the game progresses in response to player input,
+	// this is the "game loop" in a sense.
+	window.onkeydown = (e)=>{
+		// Message log debug code
+		//sendMessage(e.keyCode);
+		//console.log("keydown=" + e.keyCode);
+
+		// Only run the game loop if the player is still alive
+		if(player.alive) {
+			// Player has not used their turn yet
+			let usedTurn = false;
+			// Confirm that a key has been pressed down
+			keys[e.keyCode] = true;
+
+			// Fetch a new list of active enemies in case any enemies have changed
+			let activeEnemies = [];
+			let menuOpen = false;
+
+			// Check if the player is trying to move AND not trying to turn
+			if((keys[keyboard.LEFT] || keys[keyboard.RIGHT] || keys[keyboard.UP] || keys[keyboard.DOWN]) && !keys[keyboard.SHIFT] && menuOpen == false) {
+				// If the player can move, move and use their turn
+				usedTurn = movePlayer(e);
+			}
+			else if(keys[keyboard.X]) {
+				if(menuOpen) {menuOpen = false;}
+				else {
+					playerAttack();
+					usedTurn = true;
+				}
+			}
+			// Is the player trying to open the menu?
+			else if(keys[keyboard.Z]) {
+				menuOpen = true;
+				menu.play();
+				
+				// Keep drawing the menu until the player closes it
+				drawMenu(menuOpen);
+			}
+
+
+			// Update player orientation
+			orientPlayer(e);
+
+			// If the player has used their turn, then it is now the enemy's turn
+			if(usedTurn == true) {
+				//Enemy action
+				enemyTurn();
+			}
+			if(player.health <= 0) {
+				sendMessage("You died!");
+				player.health = 0;
+				player.alive = false;
+				defeat.play();
+				player.element.remove();
+			}
+
+			// Redraw game objects
+			drawGameObjects(currentGameObjects);
+			// Redraw the HUD
+			drawGUI();
+		}
+	};
+
+	// With the help of an onkeyup event, onkeydown and onkeyup can work together to track
+	// multiple key presses at once thanks to JavaScript being asynchrous!
+	window.onkeyup = (e)=>{
+		//console.log("keyup=" + e.keyCode);
+		// Confirm that a key has been released
+		keys[e.keyCode] = false;
+	};
+}
+
+// Console feedback for logging cells that are clicked on
+function gridClicked(e){
+	let rect = container.getBoundingClientRect();
+	let mouseX = e.clientX - rect.x;
+	let mouseY = e.clientY - rect.y;
+	let columnWidth = cellWidth+cellSpacing;
+	let col = Math.floor(mouseX/columnWidth);
+	let row = Math.floor(mouseY/columnWidth);
+	let selectedCell = cells[row][col];
+	// selectedCell.classList.add('cellSelected');
+	console.log(`${col},${row}`);
+}
+
+</script>
+</html>
